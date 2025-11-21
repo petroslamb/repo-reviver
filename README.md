@@ -1,6 +1,86 @@
-# repo-reviver
+# RepoReviver
 
-A base ReAct agent built with Google's Agent Development Kit (ADK)
+**An AI agent that automatically analyzes, fixes, and revives abandoned GitHub repositories.**
+
+Built with Google's Agent Development Kit (ADK), RepoReviver leverages cloud-based GitHub Codespaces to safely inspect repositories, update dependencies, fix configurations, and create pull requests with automated fixes.
+
+## Overview
+
+RepoReviver helps breathe new life into dormant GitHub projects by:
+- 🔍 **Analyzing** repository structure and dependencies
+- 🔧 **Fixing** outdated configurations and broken builds
+- 📦 **Updating** dependencies to current versions
+- ✅ **Verifying** changes through automated testing
+- 🚀 **Creating** pull requests with comprehensive fixes
+
+### Architecture
+
+RepoReviver uses a **single-agent architecture** with GitHub Codespaces integration:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  RepoReviver Agent (gemini-2.5-flash)                       │
+│  ──────────────────────────────────────────────────────     │
+│  Analyzes repos and orchestrates fixes using Codespaces     │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │ Uses Tools:
+                            ▼
+    ┌──────────────────────────────────────────────────┐
+    │  GitHub Codespaces Tools                         │
+    │  ────────────────────────────────────            │
+    │  • create_codespace()    - Spin up cloud env     │
+    │  • run_in_codespace()    - Execute commands      │
+    │  • delete_codespace()    - Cleanup resources     │
+    │  • list_codespaces()     - Monitor instances     │
+    └──────────────────────────────────────────────────┘
+```
+
+**Why Codespaces?**
+- ☁️ **Cloud-native**: All operations run in isolated, ephemeral cloud environments
+- 🔐 **Secure**: No local git credentials needed; inherits GitHub authentication
+- 💰 **Cost-effective**: Auto-deletes after 1 hour; uses minimal compute (2-core)
+- 🧪 **Safe**: Changes are sandboxed and reviewed before merging
+
+### Workflow
+
+1. **User provides GitHub repository URL**
+   ```
+   "Analyze https://github.com/owner/old-project"
+   ```
+
+2. **Agent creates cloud environment**
+   - Spins up GitHub Codespace for the repository
+   - Configured for automatic deletion after 1 hour
+
+3. **Analysis & fixes**
+   - Clones repo in Codespace
+   - Inspects dependencies, configs, and structure
+   - Identifies issues (outdated packages, broken builds, etc.)
+   - Generates and applies fixes
+
+4. **Creates pull request**
+   - Commits changes to a new branch
+   - Pushes via `gh` CLI (authenticated)
+   - Creates PR with detailed description of fixes
+
+5. **Cleanup**
+   - Deletes Codespace to prevent billing
+   - Reports PR URL to user
+
+### Authentication Modes
+
+RepoReviver supports flexible authentication for different environments:
+
+| Environment | Google AI | GitHub | Configuration |
+|-------------|-----------|--------|---------------|
+| **Local Dev** | AI Studio API key | `gh` CLI auth | `.env` file |
+| **Production** | Vertex AI (automatic) | `GH_TOKEN` env var | Cloud env vars |
+
+See [`.env.example`](.env.example) for detailed setup instructions.
+
+---
+
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.20.4`
 
 ## Project Structure
